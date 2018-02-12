@@ -33,8 +33,8 @@ dependencies {
 
 sourceSets {
     main {
-        groovy.srcDirs 'src/main/groovy', 'src/fromGradle/groovy'
-        resources.srcDirs 'src/main/resources', 'src/fromGradle/resources'
+        groovy.srcDirs 'src/main/groovy'
+        resources.srcDirs 'src/main/resources'
     }
 }
 

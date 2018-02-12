@@ -9,7 +9,7 @@ class DslOperation {
     File outputPath
     String outputFileExtension
 
-    DslOperation(String name) {
+    DslOperation(final String name) {
         this.name = name
     }
 }

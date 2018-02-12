@@ -4,3 +4,5 @@ include 'dslplugin'
 
 project(':dsl').projectDir = new File(rootDir, 'dsl')
 project(':dslplugin').projectDir = new File(rootDir, 'dslplugin')
+include 'productsplugin'
+
