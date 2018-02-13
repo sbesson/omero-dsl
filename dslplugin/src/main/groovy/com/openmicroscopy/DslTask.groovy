@@ -20,6 +20,8 @@ class DslTask extends DefaultTask {
         // Load template files
         def files = Utils.getFilesInRes(mappingsPath.toString(), "*.ome.xml")
 
+        println files.toString()
+
         // Parse template files to obtain complete type map
         def typeMap = new HashMap<>()
         def sr = new MappingReader(profile)

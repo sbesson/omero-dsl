@@ -1,6 +1,5 @@
 package com.openmicroscopy
 
-import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -14,7 +13,6 @@ class DslPlugin implements Plugin<Project> {
         // with the name ome.
         project.extensions.add("ome", dslOperationContainer)
 
-
         dslOperationContainer.all({ DslOperation dslOperation ->
             def env = dslOperation.getName()
             def capitalizedName = env.substring(0, 1).toUpperCase() + env.substring(1)
@@ -23,7 +21,9 @@ class DslPlugin implements Plugin<Project> {
 
             project.afterEvaluate {
                 dslTask.mappingsPath = dslOperation.mappingsPath
-                println dslTask.mappingsPath
+                dslTask.velocityTemplateFile = dslOperation.velocityTemplateFile
+                dslTask.outputPath = dslOperation.outputPath
+                dslTask.outputFileExtension = dslOperation.outputFileExtension
             }
         })
     }
