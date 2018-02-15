@@ -6,24 +6,26 @@ import org.gradle.api.Project
 class DslPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
-        // NamedDomainObjectContainer<DslOperation> dslOperationContainer = project.container(DslOperation.class)
-        def dslOperationContainer = project.container(DslOperation.class)
+        // Create velocity extensions
+        project.extensions.create('velocity', VelocityExtension)
+
+        // NamedDomainObjectContainer<DslOperationJava> dslOperationContainer = project.container(DslOperationJava.class)
+        def dslOperationContainer = project.container(DslOperationJava.class)
 
         // Add the container instance to our project
         // with the name ome.
-        project.extensions.add("ome", dslOperationContainer)
+        project.extensions.add("dsljava", dslOperationContainer)
 
-        dslOperationContainer.all({ DslOperation dslOperation ->
-            def env = dslOperation.getName()
+        dslOperationContainer.all({ DslOperationJava operation ->
+            def env = operation.getName()
             def capitalizedName = env.substring(0, 1).toUpperCase() + env.substring(1)
             def taskName = "process" + capitalizedName
             def dslTask = project.tasks.create(taskName, DslTask)
 
             project.afterEvaluate {
-                dslTask.mappingsPath = dslOperation.mappingsPath
-                dslTask.velocityTemplateFile = dslOperation.velocityTemplateFile
-                dslTask.outputPath = dslOperation.outputPath
-                dslTask.outputFileExtension = dslOperation.outputFileExtension
+                dslTask.mapFilesPath = operation.mapFilesPath
+                dslTask.velocityFile = operation.velocityFile
+                dslTask.outputPath = operation.outputPath
             }
         })
     }

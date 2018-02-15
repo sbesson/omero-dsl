@@ -2,8 +2,9 @@ package ome.dsl.velocity;
 
 import ome.dsl.SemanticType;
 import ome.dsl.SemanticTypeProcessor;
-import ome.dsl.Utils;
 import ome.dsl.sax.MappingReader;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 
@@ -19,10 +20,11 @@ import java.util.Map;
 
 public class JavaGenerator extends Generator {
 
+
     private final static String PROFILE = "psql";
 
     /**
-     * Velocity template file for generating java classes
+     * Velocity templateFile file for generating java classes
      */
     private final static String TEMPLATE_FILE = "object.vm";
 
@@ -34,33 +36,58 @@ public class JavaGenerator extends Generator {
     private final static String JAVA_OUTPUT = PKG_PLACEHOLDER + "/" + CLS_PLACEHOLDER + ".java";
 
     /**
-     * Folder to dump generated java files into
+     * Profile thing
      */
-    private final static String OUTPUT_FOLDER = "../model/src/main/java-generated/";
+    private String profile;
+
+    /**
+     * Collection of .ome.xml files to process
+     */
+    private File sourceDir;
+
+    /**
+     * Velocity templateFile file
+     */
+    private File templateFile;
+
+    /**
+     * Folder to write velocity generated content
+     */
+    private File outputDir;
+
+    private JavaGenerator(Builder builder) {
+        this.profile = builder.profile;
+        this.sourceDir = builder.sourceDir;
+        this.templateFile = builder.templateFile;
+        this.outputDir = builder.outputDir;
+    }
 
     @Override
     public void run() {
-        Collection<SemanticType> types = loadSemanticTypes();
+        // Load source files
+        Collection<File> files = FileUtils.listFiles(sourceDir,
+                new WildcardFileFilter("*.ome.xml"), null);
+
+        // Create list of semantic types from source files
+        Collection<SemanticType> types = loadSemanticTypes(files);
         if (types.isEmpty()) {
             return; // Skip when no files, otherwise we overwrite.
         }
 
+        // Velocity process the semantic types
         for (SemanticType st : types) {
             VelocityContext vc = new VelocityContext();
             vc.put("type", st);
 
-            Template template = velocityEngine.getTemplate(TEMPLATE_FILE);
+            Template template = velocityEngine.getTemplate(templateFile.toString());
             File destination = prepareOutput(st);
             writeToFile(vc, template, destination);
         }
     }
 
-    private Collection<SemanticType> loadSemanticTypes() {
-        Collection<File> files = Utils.getFilesInRes("mappings/",
-                "*.ome.xml");
+    private Collection<SemanticType> loadSemanticTypes(Collection<File> files) {
         Map<String, SemanticType> typeMap = new HashMap<>();
-
-        MappingReader sr = new MappingReader(PROFILE);
+        MappingReader sr = new MappingReader(this.profile);
         for (File file : files) {
             if (file.exists()) {
                 typeMap.putAll(sr.parse(file));
@@ -78,7 +105,7 @@ public class JavaGenerator extends Generator {
         String className = st.getShortname();
         String packageName = st.getPackage();
 
-        String target = OUTPUT_FOLDER + JavaGenerator.JAVA_OUTPUT;
+        String target = outputDir.getPath() + JavaGenerator.JAVA_OUTPUT;
         target = target.replace(CLS_PLACEHOLDER, className);
         target = target.replace(PKG_PLACEHOLDER, packageName);
 
@@ -103,4 +130,38 @@ public class JavaGenerator extends Generator {
             e.printStackTrace();
         }
     }
+
+    public static class Builder {
+
+        private String profile;
+        private File outputDir;
+        private File sourceDir;
+        private File templateFile;
+
+        public Builder setProfile(String profile) {
+            this.profile = profile;
+            return this;
+        }
+
+        public Builder setOutputDir(File outputDir) {
+            this.outputDir = outputDir;
+            return this;
+        }
+
+        public Builder setSourceDir(File sourceDir) {
+            this.sourceDir = sourceDir;
+            return this;
+        }
+
+        public Builder setTemplateFile(File templateFile) {
+            this.templateFile = templateFile;
+            return this;
+        }
+
+        public JavaGenerator build() {
+            return new JavaGenerator(this);
+        }
+    }
+
+
 }

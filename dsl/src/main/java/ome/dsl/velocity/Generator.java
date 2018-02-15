@@ -18,11 +18,11 @@ abstract class Generator implements Runnable {
          * http://velocity.apache.org/engine/1.7/developer-guide.html#configuration-examples
          */
         velocityEngine.setProperty(RuntimeConstants.RUNTIME_LOG_INSTANCE, logger);
-        velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "file, class");
-        velocityEngine.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, "./src/main/resources/templates");
+        velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "file");
         velocityEngine.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_CACHE, "true");
+//        velocityEngine.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, "./src/main/resources/templates");
         velocityEngine.setProperty("class.resource.loader.class",
-                "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+                "org.apache.velocity.runtime.resource.loader.FileResourceLoader");
         velocityEngine.init();
     }
 }

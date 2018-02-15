@@ -42,8 +42,6 @@ public class MappingReader {
      */
     private SAXParser parser;
 
-    private ArrayList<SemanticType> unprocessedTypes = new ArrayList<>();
-
     public MappingReader(String profile) {
         handler = new DSLHandler(profile);
         init();
@@ -65,9 +63,7 @@ public class MappingReader {
     public Map<String, SemanticType> parse(File file) {
         try {
             URL xmlFile = file.toURI().toURL();
-
             parser.parse(xmlFile.getPath(), handler);
-
             return handler.getTypes();
         } catch (MalformedURLException e) {
             throw new RuntimeException("Error determining file's path:" + file
