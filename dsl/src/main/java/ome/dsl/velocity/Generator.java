@@ -2,6 +2,7 @@ package ome.dsl.velocity;
 
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
+import org.apache.velocity.runtime.resource.loader.FileResourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,9 +21,8 @@ abstract class Generator implements Runnable {
         velocityEngine.setProperty(RuntimeConstants.RUNTIME_LOG_INSTANCE, logger);
         velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "file");
         velocityEngine.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_CACHE, "true");
-//        velocityEngine.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, "./src/main/resources/templates");
-//        velocityEngine.setProperty("class.resource.loader.class",
-//                "org.apache.velocity.runtime.resource.loader.FileResourceLoader");
+        velocityEngine.setProperty("file.resource.loader.class",
+                FileResourceLoader.class.getName());
         velocityEngine.init();
     }
 }

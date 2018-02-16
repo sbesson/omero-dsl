@@ -8,8 +8,8 @@ import org.gradle.api.tasks.TaskAction
 class DslTask extends DefaultTask {
 
     String profile = "psql"
+    String velocityFile
     File mapFilesPath
-    File velocityFile
     File outputPath
 
     VelocityEngine velocityEngine

@@ -2,18 +2,17 @@ package com.openmicroscopy
 
 import org.apache.velocity.app.VelocityEngine
 import org.apache.velocity.runtime.RuntimeConstants
-import org.apache.velocity.runtime.resource.loader.FileResourceLoader
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 class DslPlugin implements Plugin<Project> {
 
-    VelocityExtension velocityExtension
+    VelocityExtension velocityExt
 
     @Override
     void apply(Project project) {
         // Create velocity extensions
-        velocityExtension = project.extensions.create('velocity', VelocityExtension)
+        velocityExt = project.extensions.create('velocity', VelocityExtension)
 
         // NamedDomainObjectContainer<DslOperationJava> dslOperationContainer = project.container(DslOperationJava.class)
         def dslOperationContainer = project.container(DslOperationJava.class)
@@ -39,20 +38,14 @@ class DslPlugin implements Plugin<Project> {
 
     VelocityEngine configureVelocity() {
         def velocity = new VelocityEngine()
-        velocity.setProperty(
-                RuntimeConstants.RESOURCE_LOADER,
-                velocityExtension.resource_loader)
-        velocity.setProperty(
-                RuntimeConstants.FILE_RESOURCE_LOADER_PATH,
-                velocityExtension.file_resource_loader_path)
-        velocity.setProperty(
-                "file.resource.loader.class",
-                FileResourceLoader.class.getName())
-        velocity.setProperty(
-                RuntimeConstants.FILE_RESOURCE_LOADER_CACHE,
-                velocityExtension.file_resource_loader_cache)
+        // Set any resource loader class types
+        for (def entry : velocityExt.resource_loader_class.entrySet()) {
+            velocity.setProperty(entry.key, entry.value)
+        }
+        velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, velocityExt.resource_loader)
+        velocity.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, velocityExt.file_resource_loader_path)
+        velocity.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_CACHE, velocityExt.file_resource_loader_cache)
         velocity.init()
-
         return velocity
     }
 

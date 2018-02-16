@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,7 +42,7 @@ public class JavaGenerator extends Generator {
     /**
      * Velocity templateFile file
      */
-    private File templateFile;
+    private String templateFile;
 
     /**
      * Folder to write velocity generated content
@@ -78,7 +77,7 @@ public class JavaGenerator extends Generator {
             VelocityContext vc = new VelocityContext();
             vc.put("type", st);
 
-            Template template = velocityEngine.getTemplate(templateFile.getName());
+            Template template = velocityEngine.getTemplate(templateFile);
             File destination = prepareOutput(st);
             writeToFile(vc, template, destination);
         }
@@ -135,7 +134,7 @@ public class JavaGenerator extends Generator {
         private String profile;
         private File outputDir;
         private File sourceDir;
-        private File templateFile;
+        private String templateFile;
 
         public Builder setProfile(String profile) {
             this.profile = profile;
@@ -152,7 +151,7 @@ public class JavaGenerator extends Generator {
             return this;
         }
 
-        public Builder setTemplateFile(File templateFile) {
+        public Builder setTemplateFile(String templateFile) {
             this.templateFile = templateFile;
             return this;
         }
