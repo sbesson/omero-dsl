@@ -7,26 +7,21 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 public class JavaGenerator extends Generator {
-
-
-    private final static String PROFILE = "psql";
-
-    /**
-     * Velocity templateFile file for generating java classes
-     */
-    private final static String TEMPLATE_FILE = "object.vm";
 
     /**
      * Output structure for Java files e.g. 'package/class/name.java'
@@ -62,6 +57,10 @@ public class JavaGenerator extends Generator {
         this.outputDir = builder.outputDir;
     }
 
+    public void setVelocityEngine(VelocityEngine ve) {
+        this.velocityEngine = ve;
+    }
+
     @Override
     public void run() {
         // Load source files
@@ -79,7 +78,7 @@ public class JavaGenerator extends Generator {
             VelocityContext vc = new VelocityContext();
             vc.put("type", st);
 
-            Template template = velocityEngine.getTemplate(templateFile.toString());
+            Template template = velocityEngine.getTemplate(templateFile.getName());
             File destination = prepareOutput(st);
             writeToFile(vc, template, destination);
         }
@@ -87,7 +86,7 @@ public class JavaGenerator extends Generator {
 
     private Collection<SemanticType> loadSemanticTypes(Collection<File> files) {
         Map<String, SemanticType> typeMap = new HashMap<>();
-        MappingReader sr = new MappingReader(this.profile);
+        MappingReader sr = new MappingReader(profile);
         for (File file : files) {
             if (file.exists()) {
                 typeMap.putAll(sr.parse(file));
@@ -98,14 +97,14 @@ public class JavaGenerator extends Generator {
             return Collections.emptyList(); // Skip when no files, otherwise we overwrite.
         }
 
-        return new SemanticTypeProcessor(PROFILE, typeMap).call();
+        return new SemanticTypeProcessor(profile, typeMap).call();
     }
 
     private File prepareOutput(SemanticType st) throws RuntimeException {
         String className = st.getShortname();
         String packageName = st.getPackage();
 
-        String target = outputDir.getPath() + JavaGenerator.JAVA_OUTPUT;
+        String target = Paths.get(outputDir.getPath(), JavaGenerator.JAVA_OUTPUT).toString();
         target = target.replace(CLS_PLACEHOLDER, className);
         target = target.replace(PKG_PLACEHOLDER, packageName);
 

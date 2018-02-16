@@ -21,8 +21,8 @@ abstract class Generator implements Runnable {
         velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "file");
         velocityEngine.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_CACHE, "true");
 //        velocityEngine.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, "./src/main/resources/templates");
-        velocityEngine.setProperty("class.resource.loader.class",
-                "org.apache.velocity.runtime.resource.loader.FileResourceLoader");
+//        velocityEngine.setProperty("class.resource.loader.class",
+//                "org.apache.velocity.runtime.resource.loader.FileResourceLoader");
         velocityEngine.init();
     }
 }

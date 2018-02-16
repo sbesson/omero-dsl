@@ -4,8 +4,8 @@ class DslOperationJava {
 
     final String name
     File mapFilesPath
-    File velocityFile
     File outputPath
+    File velocityFile
 
     DslOperationJava(final String name) {
         this.name = name
