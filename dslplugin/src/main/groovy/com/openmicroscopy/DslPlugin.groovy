@@ -37,8 +37,8 @@ class DslPlugin implements Plugin<Project> {
     static VelocityEngine configureVelocity(Project project) {
         def velocity = new VelocityEngine()
 
-        project.velocity.resource_loader_class.each { k, v ->
-            velocity.setProperty("${k}", "${v}")
+        project.velocity.resource_loader_class.each { String k, String v ->
+            velocity.setProperty(k, v)
         }
 
         velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, project.velocity.resource_loader)
