@@ -1,6 +1,7 @@
 subprojects {
     repositories {
         jcenter()
+        mavenLocal()
     }
 
     group = 'com.openmicroscopy'
