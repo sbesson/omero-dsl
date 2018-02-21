@@ -7,8 +7,6 @@ plugins {
 
 // In this section you declare where to find the dependencies of your project
 repositories {
-    // Use jcenter for resolving your dependencies.
-    // You can declare any Maven/Ivy/file repository here.
     jcenter()
     mavenLocal()
 }
@@ -23,8 +21,7 @@ dependencies {
     compile localGroovy()
 
     // We need this for the sax reader and type processor
-    compile 'com.openmicroscopy:dsl:1.0-SNAPSHOT'
-    // compile(project(':dsl'))
+    compile project (':dsl') // 'com.openmicroscopy:dsl:1.0-SNAPSHOT'
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
