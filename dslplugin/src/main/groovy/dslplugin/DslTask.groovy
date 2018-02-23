@@ -1,4 +1,4 @@
-package com.openmicroscopy
+package dslplugin
 
 import ome.dsl.velocity.JavaGenerator
 import org.apache.velocity.app.VelocityEngine

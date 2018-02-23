@@ -1,8 +1,10 @@
 /* https://dzone.com/articles/debugging-gradle-plugins */
 
-plugins {
-    id 'groovy'
-    id 'maven-publish'
+apply plugin: 'groovy'
+apply plugin: 'maven-publish'
+
+repositories {
+    jcenter()
 }
 
 dependencies {
@@ -10,10 +12,7 @@ dependencies {
     compile localGroovy()
 
     // We need this for the sax reader and type processor
-    compile project (':dsl') // 'com.openmicroscopy:dsl:1.0-SNAPSHOT'
-
-    // Use JUnit test framework
-    testImplementation 'junit:junit:4.12'
+    compile project(':dsl')
 }
 
 sourceSets {

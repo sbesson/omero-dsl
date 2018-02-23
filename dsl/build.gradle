@@ -1,6 +1,8 @@
-plugins {
-    id 'java'
-    id 'maven-publish'
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+
+repositories {
+    jcenter()
 }
 
 sourceCompatibility = 1.8

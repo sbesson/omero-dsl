@@ -1,4 +1,4 @@
-package com.openmicroscopy
+package dslplugin
 
 class VelocityExtension {
     Map<String, String> resource_loader_class

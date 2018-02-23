@@ -1,4 +1,4 @@
-package com.openmicroscopy
+package dslplugin
 
 import org.apache.velocity.app.VelocityEngine
 import org.apache.velocity.runtime.RuntimeConstants

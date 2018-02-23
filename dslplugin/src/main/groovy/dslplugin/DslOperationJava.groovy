@@ -1,4 +1,4 @@
-package com.openmicroscopy
+package dslplugin
 
 class DslOperationJava {
 
