@@ -9,7 +9,7 @@ class DslPlugin implements Plugin<Project> {
 
     /**
      * Sets the group name for the DSLPlugin tasks to reside in.
-     * i.e. In a terminal, call `./gradlew tasks` to list tasks in their groups
+     * i.e. In a terminal, call `./gradlew tasks` to list tasks in their groups in a terminal
      */
     final def GROUP = 'omero'
 
@@ -29,14 +29,17 @@ class DslPlugin implements Plugin<Project> {
             def env = operation.getName()
             def capitalizedName = env.substring(0, 1).toUpperCase() + env.substring(1)
             def taskName = "process" + capitalizedName
-            project.tasks.create(taskName, DslTask) { dslTask ->
-                dslTask.group = GROUP
-                project.afterEvaluate {
-                    dslTask.mapFilesPath = operation.mapFilesPath
-                    dslTask.velocityFile = operation.velocityFile
-                    dslTask.outputPath = operation.outputPath
-                    dslTask.velocityEngine = configureVelocity(project)
-                }
+
+            // Create task and assign group name
+            def dslTask = project.tasks.create(taskName, DslTask)
+            dslTask.group = GROUP
+
+            // Assign config after eval
+            project.afterEvaluate {
+                dslTask.mapFilesPath = operation.mapFilesPath
+                dslTask.velocityFile = operation.velocityFile
+                dslTask.outputPath = operation.outputPath
+                dslTask.velocityEngine = configureVelocity(project)
             }
         })
     }
