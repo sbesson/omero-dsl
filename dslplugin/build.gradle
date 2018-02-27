@@ -31,7 +31,7 @@ task fatJar(type: Jar) {
 }
 
 task sourceJar(type: Jar) {
-    from sourceSets.main.allJava
+    from sourceSets.main.allSource
 }
 
 publishing {

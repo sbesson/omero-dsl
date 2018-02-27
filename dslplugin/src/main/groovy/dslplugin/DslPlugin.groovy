@@ -31,8 +31,9 @@ class DslPlugin implements Plugin<Project> {
             def taskName = "process" + capitalizedName
 
             // Create task and assign group name
-            def dslTask = project.tasks.create(taskName, DslTask)
+            def dslTask = project.task(taskName, type: DslTask)
             dslTask.group = GROUP
+            dslTask.description = 'parses ome.xml files and compiles velocity template'
 
             // Assign config after eval
             project.afterEvaluate {
@@ -41,6 +42,9 @@ class DslPlugin implements Plugin<Project> {
                 dslTask.outputPath = operation.outputPath
                 dslTask.velocityEngine = configureVelocity(project)
             }
+
+            // Ensure the dsltask runs before compileJava
+            project.tasks.getByName("compileJava").dependsOn(taskName)
         })
     }
 

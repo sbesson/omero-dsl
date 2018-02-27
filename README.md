@@ -3,7 +3,7 @@
 The OMERO DSL plugin for Gradle provides a plugin named `velocity` and `dsljava`.
 This plugin manages the reading of `*.ome.xml` mappings and compilation of `.vm` velocity templates.
 
-#Build
+### Build
 
 To build the plugin run:
 ```shell
@@ -15,7 +15,7 @@ To publish the plugin run:
 $./gradlew publishToMavenLocal
 ```
 
-#Usage
+### Usage
 
 Include the following to the top of your _build.gradle_ file:
 
@@ -34,7 +34,7 @@ buildscript {
 apply plugin: 'com.openmicroscopy.dslplugin'
 ```
 
-#Configuring plugin
+### Configuring plugin
 
 In order to configure the [VelocityEngine](http://velocity.apache.org), add the `velocity` 
 extension to your _build.gradle_ file, for example:
@@ -80,3 +80,19 @@ dsljava {
     }
 }
 ```
+
+### Gradle Task
+
+Additional configurations to the `dsljava` extension add a new task 
+
+| Type      | Description                                       |
+| --------- | ------------------------------------------------- |
+| DslTask   | Generates Java source from ome.xml and .vm files  |
+
+If, like in the examples above, you create configurations `javaModels` and `sqlModels`, these tasks will run
+before `compileJava`.
+
+| Task name   | Depends On        |
+| ----------- | ----------------- |
+| compileJava | processJavaModels |
+| compileJava | processSqlModels  |
