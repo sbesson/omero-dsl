@@ -1,13 +1,9 @@
 package dslplugin
 
-class DslOperationJava {
-
-    final String name
-    File mapFilesPath
+class DslOperationJava extends DslOperation {
     File outputPath
-    String velocityFile
 
-    DslOperationJava(final String name) {
-        this.name = name
+    DslOperationJava(String name) {
+        super(name)
     }
 }

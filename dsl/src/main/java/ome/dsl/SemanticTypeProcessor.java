@@ -22,7 +22,7 @@ public class SemanticTypeProcessor implements Callable<Collection<SemanticType>>
     }
 
     @Override
-    public Collection<SemanticType> call() {
+    public List<SemanticType> call() {
         /*
          * Handles the various link ups for annotations. (Possibly temporary)
          * This creates new types and therefore should come first.

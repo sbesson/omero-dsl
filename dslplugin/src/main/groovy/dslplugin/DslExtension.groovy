@@ -1,0 +1,5 @@
+package dslplugin
+
+class DslExtension {
+
+}
