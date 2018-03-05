@@ -16,11 +16,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 abstract class Generator implements Runnable {
 
@@ -36,12 +32,12 @@ abstract class Generator implements Runnable {
     /**
      * Collection of .ome.xml files to process
      */
-    File sourceDir;
+    List<File> omeXmlFiles;
 
     /**
      * Velocity templateFile file
      */
-    String templateFile;
+    File templateFile;
 
     Generator() {
         velocityEngine = new VelocityEngine();
@@ -97,29 +93,6 @@ abstract class Generator implements Runnable {
 
     File prepareOutput(String target) {
         return prepareOutput(new File(target));
-    }
-
-    protected static abstract class Builder {
-        String profile;
-        File sourceDir;
-        String templateFile;
-
-        public Builder setProfile(String profile) {
-            this.profile = profile;
-            return this;
-        }
-
-        public Builder setSourceDir(File sourceDir) {
-            this.sourceDir = sourceDir;
-            return this;
-        }
-
-        public Builder setTemplateFile(String templateFile) {
-            this.templateFile = templateFile;
-            return this;
-        }
-
-        abstract public Generator build();
     }
 
 }

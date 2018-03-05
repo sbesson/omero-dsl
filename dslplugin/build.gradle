@@ -2,14 +2,15 @@
 
 apply plugin: 'groovy'
 apply plugin: 'maven-publish'
+apply plugin: 'java-gradle-plugin'
 
 repositories {
     jcenter()
 }
 
 dependencies {
-    compile gradleApi()
-    compile localGroovy()
+    // compile gradleApi()
+    // compile localGroovy()
 
     // We need this for the sax reader and type processor
     compile project(':dsl')
@@ -22,6 +23,15 @@ sourceSets {
     }
 }
 
+gradlePlugin {
+    plugins {
+        dslplugin {
+            id = 'com.openmicroscopy.dslplugin'
+            implementationClass = 'dslplugin.DslPlugin'
+        }
+    }
+}
+
 task fatJar(type: Jar) {
     baseName = project.name + '-all'
     from sourceSets.main.output
@@ -31,6 +41,7 @@ task fatJar(type: Jar) {
 }
 
 task sourceJar(type: Jar) {
+    classifier 'sources'
     from sourceSets.main.allSource
 }
 
@@ -38,9 +49,7 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
-            artifact sourceJar {
-                classifier "sources"
-            }
+            artifact sourceJar
         }
     }
 }

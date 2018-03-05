@@ -1,13 +1,10 @@
 package ome.dsl.velocity;
 
 import ome.dsl.SemanticType;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -22,19 +19,15 @@ public class HibernateGenerator extends Generator {
 
     private HibernateGenerator(Builder builder) {
         this.profile = builder.profile;
-        this.sourceDir = builder.sourceDir;
+        this.omeXmlFiles = builder.omeXmlFiles;
         this.templateFile = builder.templateFile;
         this.outputFile = builder.outputFile;
     }
 
     @Override
     public void run() {
-        // Load source files
-        Collection<File> files = FileUtils.listFiles(sourceDir,
-                new WildcardFileFilter("*.ome.xml"), null);
-
         // Create list of semantic types from source files
-        List<SemanticType> types = loadSemanticTypes(files);
+        List<SemanticType> types = loadSemanticTypes(omeXmlFiles);
         if (types.isEmpty()) {
             return; // Skip when no files, otherwise we overwrite.
         }
@@ -47,20 +40,37 @@ public class HibernateGenerator extends Generator {
             VelocityContext vc = new VelocityContext();
             vc.put("types", st);
 
-            Template template = velocityEngine.getTemplate(templateFile);
+            Template template = velocityEngine.getTemplate(templateFile.toString());
             writeToFile(vc, template, prepareOutput(this.outputFile));
         }
     }
 
-    public static class Builder extends Generator.Builder {
+    public static class Builder {
+        String profile;
+        File templateFile;
         File outputFile;
+        List<File> omeXmlFiles;
 
-        public Generator.Builder setOutputDir(File outputDir) {
-            this.outputFile = outputDir;
+        public Builder setProfile(String profile) {
+            this.profile = profile;
             return this;
         }
 
-        @Override
+        public Builder setOmeXmlFiles(List<File> omeXmlFiles) {
+            this.omeXmlFiles = omeXmlFiles;
+            return this;
+        }
+
+        public Builder setTemplateFile(File template) {
+            this.templateFile = template;
+            return this;
+        }
+
+        public Builder setOutputFile(File outputFile) {
+            this.outputFile = outputFile;
+            return this;
+        }
+
         public Generator build() {
             return new HibernateGenerator(this);
         }
