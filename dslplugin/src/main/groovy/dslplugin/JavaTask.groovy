@@ -1,7 +1,6 @@
 package dslplugin
 
 import ome.dsl.velocity.JavaGenerator
-import org.apache.velocity.app.VelocityEngine
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileTree
 import org.gradle.api.tasks.Input
@@ -15,7 +14,7 @@ class JavaTask extends DefaultTask {
     String profile = "psql"
 
     @Input
-    File velocityFile
+    String templateName
 
     @InputFiles
     FileTree omeXmlFiles
@@ -23,18 +22,18 @@ class JavaTask extends DefaultTask {
     @OutputDirectory
     File outputPath
 
-    VelocityEngine velocityEngine
+    Properties velocityProps
 
     @TaskAction
     def apply() {
         def generator = new JavaGenerator.Builder()
                 .setProfile(profile)
                 .setOmeXmlFiles(omeXmlFiles as List)
-                .setTemplateFile(velocityFile)
+                .setTemplate(templateName)
                 .setOutputDir(outputPath)
+                .setVelocityProperties(velocityProps)
                 .build()
 
-        generator.setVelocityEngine(velocityEngine)
         generator.run()
     }
 

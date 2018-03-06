@@ -1,6 +1,5 @@
 package dslplugin
 
-import org.apache.velocity.app.VelocityEngine
 import org.apache.velocity.runtime.RuntimeConstants
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -13,14 +12,11 @@ class DslPlugin implements Plugin<Project> {
      */
     final def GROUP = 'omero'
 
-    final def velocity = new VelocityEngine()
-
     @Override
     void apply(Project project) {
         setupDsl(project)
-        configureVelocity(project)
         configJavaTasks(project)
-        // configHibernateTasks(project)
+        configHibernateTasks(project)
     }
 
     void setupDsl(final Project project) {
@@ -38,24 +34,23 @@ class DslPlugin implements Plugin<Project> {
     }
 
     void configJavaTasks(final Project project) {
-        project.dsl.java.all {
+        project.dsl.java.all { info ->
             // Create an object instance to hold our delegate (this)
             // type to pass into inner closures
-            def javaInfo = delegate
-            def taskName = "process" + name.capitalize()
+            def taskName = "process${info.name.capitalize()}"
 
             // Create task and assign group name
-            def dslTask = project.task(taskName, type: JavaTask) {
+            def jtask = project.task(taskName, type: JavaTask) {
                 group = GROUP
                 description = 'parses ome.xml files and compiles velocity template'
             }
 
             // Assign property values to task inputs
             project.afterEvaluate {
-                dslTask.omeXmlFiles = javaInfo.omeXmlFiles
-                dslTask.velocityFile = javaInfo.velocityFile
-                dslTask.outputPath = javaInfo.outputPath
-                dslTask.velocityEngine = velocity
+                jtask.velocityProps = configureVelocity(project)
+                jtask.omeXmlFiles = info.omeXmlFiles
+                jtask.templateName = info.templateName
+                jtask.outputPath = info.outputPath
             }
 
             // Ensure the dsltask runs before compileJava
@@ -67,45 +62,55 @@ class DslPlugin implements Plugin<Project> {
         project.dsl.hibernate.all {
             // Create an object instance to hold our delegate (this)
             // type to pass into inner closures
-            def javaInfo = delegate
-            def taskName = "process" + name.capitalize()
+            def info = delegate
+            def taskName = "process${name.capitalize()}"
 
             // Create task and assign group name
-            /*def dslTask = project.task(taskName, type: JavaTask) {
+            def htask = project.task(taskName, type: HibernateTask) {
                 group = GROUP
                 description = 'parses ome.xml files and compiles velocity template'
             }
 
             // Assign property values to task inputs
             project.afterEvaluate {
-                dslTask.omeXmlFiles = javaInfo.omeXmlFiles
-                dslTask.velocityFile = javaInfo.velocityFile
-                dslTask.outputPath = javaInfo.outputPath
-                dslTask.velocityEngine = velocity
-            }*/
+                htask.velocityProps = configureVelocity(project)
+                htask.omeXmlFiles = info.omeXmlFiles
+                htask.templateName = info.templateName
+                htask.outFile = info.outFile
+            }
 
             // Ensure the dsltask runs before compileJava
             project.tasks.getByName("compileJava").dependsOn(taskName)
         }
     }
 
-    void configureVelocity(Project project) {
-        project.afterEvaluate {
-            velocity.setProperty(RuntimeConstants.RESOURCE_LOADER,
-                    project.dsl.velocity.resource_loader)
+    static Properties configureVelocity(Project project) {
+        final def props = new Properties()
+        final def extension = project.dsl.velocity
 
-            velocity.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH,
-                    project.dsl.velocity.file_resource_loader_path)
+        props.setProperty(RuntimeConstants.RUNTIME_LOG_NAME,
+                project.getLogger().getClass().getName())
 
-            velocity.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_CACHE,
-                    project.dsl.velocity.file_resource_loader_cache)
-
-            project.dsl.velocity.resource_loader_class.each { k, v ->
-                velocity.setProperty(k as String, v as String)
-            }
-
-            velocity.init()
+        if (extension.hasProperty('resource_loader')) {
+            props.setProperty(RuntimeConstants.RESOURCE_LOADER,
+                    extension.resource_loader as String)
         }
+
+        if (extension.hasProperty('file_resource_loader_path')) {
+            props.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH,
+                    extension.file_resource_loader_path as String)
+        }
+
+        if (extension.hasProperty('file_resource_loader_cache')) {
+            props.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_CACHE,
+                    extension.file_resource_loader_cache as String)
+        }
+
+        extension.resource_loader_class.each { k, v ->
+            props.setProperty(k as String, v as String)
+        }
+
+        return props
     }
 
 }

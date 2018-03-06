@@ -14,6 +14,7 @@ dependencies {
 
     // We need this for the sax reader and type processor
     compile project(':dsl')
+    compile 'org.slf4j:slf4j-simple:1.8.0-beta1'
 }
 
 sourceSets {

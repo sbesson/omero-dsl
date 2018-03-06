@@ -6,8 +6,6 @@ import ome.dsl.sax.MappingReader;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
-import org.apache.velocity.runtime.RuntimeConstants;
-import org.apache.velocity.runtime.resource.loader.FileResourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +20,7 @@ abstract class Generator implements Runnable {
 
     final Logger logger = LoggerFactory.getLogger(JavaGenerator.class);
 
-    VelocityEngine velocityEngine;
+    VelocityEngine velocity = new VelocityEngine();
 
     /**
      * Profile thing
@@ -35,23 +33,9 @@ abstract class Generator implements Runnable {
     List<File> omeXmlFiles;
 
     /**
-     * Velocity templateFile file
+     * Velocity template file name
      */
-    File templateFile;
-
-    Generator() {
-        velocityEngine = new VelocityEngine();
-        /*
-         * Configuration documentation:
-         * http://velocity.apache.org/engine/1.7/developer-guide.html#configuration-examples
-         */
-        velocityEngine.setProperty(RuntimeConstants.RUNTIME_LOG_INSTANCE, logger);
-        velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "file");
-        velocityEngine.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_CACHE, "true");
-        velocityEngine.setProperty("file.resource.loader.class",
-                FileResourceLoader.class.getName());
-        velocityEngine.init();
-    }
+    String templateName;
 
     List<SemanticType> loadSemanticTypes(Collection<File> files) {
         Map<String, SemanticType> typeMap = new HashMap<>();
@@ -75,7 +59,7 @@ abstract class Generator implements Runnable {
                         new FileOutputStream(destination), StandardCharsets.UTF_8))) {
             template.merge(vc, output);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("", e);
         }
     }
 
@@ -94,5 +78,4 @@ abstract class Generator implements Runnable {
     File prepareOutput(String target) {
         return prepareOutput(new File(target));
     }
-
 }

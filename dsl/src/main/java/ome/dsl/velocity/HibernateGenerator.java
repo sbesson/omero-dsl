@@ -7,10 +7,9 @@ import org.apache.velocity.VelocityContext;
 import java.io.File;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Properties;
 
 public class HibernateGenerator extends Generator {
-
-    private static final String HIBERNATE_OUTPUT = "${resrc.dest}/hibernate.cfg.xml";
 
     /**
      * Folder to write velocity generated content
@@ -20,8 +19,9 @@ public class HibernateGenerator extends Generator {
     private HibernateGenerator(Builder builder) {
         this.profile = builder.profile;
         this.omeXmlFiles = builder.omeXmlFiles;
-        this.templateFile = builder.templateFile;
+        this.templateName = builder.templateName;
         this.outputFile = builder.outputFile;
+        this.velocity.init(builder.properties);
     }
 
     @Override
@@ -40,16 +40,17 @@ public class HibernateGenerator extends Generator {
             VelocityContext vc = new VelocityContext();
             vc.put("types", st);
 
-            Template template = velocityEngine.getTemplate(templateFile.toString());
-            writeToFile(vc, template, prepareOutput(this.outputFile));
+            Template template = velocity.getTemplate(templateName);
+            writeToFile(vc, template, prepareOutput(outputFile));
         }
     }
 
     public static class Builder {
         String profile;
-        File templateFile;
+        String templateName;
         File outputFile;
         List<File> omeXmlFiles;
+        Properties properties;
 
         public Builder setProfile(String profile) {
             this.profile = profile;
@@ -61,13 +62,18 @@ public class HibernateGenerator extends Generator {
             return this;
         }
 
-        public Builder setTemplateFile(File template) {
-            this.templateFile = template;
+        public Builder setTemplate(String template) {
+            this.templateName = template;
             return this;
         }
 
-        public Builder setOutputFile(File outputFile) {
+        public Builder setOutput(File outputFile) {
             this.outputFile = outputFile;
+            return this;
+        }
+
+        public Builder setVelocityProperties(Properties p) {
+            this.properties = p;
             return this;
         }
 

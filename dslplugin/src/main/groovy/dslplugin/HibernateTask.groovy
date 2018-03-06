@@ -1,10 +1,10 @@
 package dslplugin
 
 import ome.dsl.velocity.HibernateGenerator
-import org.apache.velocity.app.VelocityEngine
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.FileTree
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
@@ -14,27 +14,26 @@ class HibernateTask extends DefaultTask {
     String profile = "psql"
 
     @Input
-    VelocityEngine velocityEngine
-
-    @Input
-    File velocityFile
-
-    @InputDirectory
-    File mapFilesPath
+    String templateName
 
     @OutputFile
-    File outputFile
+    File outFile
+
+    @InputFiles
+    FileTree omeXmlFiles
+
+    Properties velocityProps
 
     @TaskAction
     def apply() {
         def generator = new HibernateGenerator.Builder()
                 .setProfile(profile)
-                .setTemplateFile(velocityFile)
-                .setOmeXmlFiles(mapFilesPath)
-                .setOutputFile(outputFile)
+                .setOmeXmlFiles(omeXmlFiles as List)
+                .setTemplate(templateName)
+                .setOutput(outFile)
+                .setVelocityProperties(velocityProps)
                 .build()
 
-        generator.setVelocityEngine(velocityEngine)
         generator.run()
     }
 

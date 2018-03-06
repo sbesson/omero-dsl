@@ -5,7 +5,7 @@ import org.gradle.api.file.FileTree
 class DslOperation {
     final String name
 
-    File velocityFile
+    String templateName
 
     FileTree omeXmlFiles
 
