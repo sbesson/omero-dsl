@@ -35,22 +35,21 @@ class DslPlugin implements Plugin<Project> {
 
     void configJavaTasks(final Project project) {
         project.dsl.java.all { info ->
-            // Create an object instance to hold our delegate (this)
-            // type to pass into inner closures
             def taskName = "process${info.name.capitalize()}"
 
             // Create task and assign group name
-            def jtask = project.task(taskName, type: JavaTask) {
+            def task = project.task(taskName, type: JavaTask) {
                 group = GROUP
                 description = 'parses ome.xml files and compiles velocity template'
             }
 
             // Assign property values to task inputs
             project.afterEvaluate {
-                jtask.velocityProps = configureVelocity(project)
-                jtask.omeXmlFiles = info.omeXmlFiles
-                jtask.templateName = info.templateName
-                jtask.outputPath = info.outputPath
+                def props = configureVelocity(project)
+                task.velocityProps = props
+                task.template = determineTemplateFileLocation(props, info.template)
+                task.omeXmlFiles = info.omeXmlFiles
+                task.outputPath = info.outputPath
             }
 
             // Ensure the dsltask runs before compileJava
@@ -59,29 +58,44 @@ class DslPlugin implements Plugin<Project> {
     }
 
     void configHibernateTasks(final Project project) {
-        project.dsl.hibernate.all {
-            // Create an object instance to hold our delegate (this)
-            // type to pass into inner closures
-            def info = delegate
-            def taskName = "process${name.capitalize()}"
+        project.dsl.hibernate.all { info ->
+            def taskName = "process${info.name.capitalize()}"
 
             // Create task and assign group name
-            def htask = project.task(taskName, type: HibernateTask) {
+            def task = project.task(taskName, type: HibernateTask) {
                 group = GROUP
                 description = 'parses ome.xml files and compiles velocity template'
             }
 
             // Assign property values to task inputs
             project.afterEvaluate {
-                htask.velocityProps = configureVelocity(project)
-                htask.omeXmlFiles = info.omeXmlFiles
-                htask.templateName = info.templateName
-                htask.outFile = info.outFile
+                def props = configureVelocity(project)
+                task.velocityProps = props
+                task.template = determineTemplateFileLocation(props, info.template)
+                task.omeXmlFiles = info.omeXmlFiles
+                task.outFile = info.outFile
             }
 
             // Ensure the dsltask runs before compileJava
             project.tasks.getByName("compileJava").dependsOn(taskName)
         }
+    }
+
+    /**
+     * If the velocity properties include a path to a folder containing .vm files
+     * this method will combine the path of that folder with the name of the template
+     * file we're interested in. This is a workaround so that Gradle can monitor
+     * the .vm file for any changes and thus trigger an incremental build.
+     * @param props velocity properties
+     * @param templateName name of template file
+     * @return
+     */
+    static File determineTemplateFileLocation(Properties props, String templateName) {
+        String templateDir = props.getProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH)
+        if (templateDir == null) {
+            return new File(templateName)
+        }
+        return new File(templateDir, templateName)
     }
 
     static Properties configureVelocity(Project project) {

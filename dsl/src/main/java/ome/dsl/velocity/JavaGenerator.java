@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Function;
 
 public class JavaGenerator extends Generator {
 
@@ -24,10 +25,14 @@ public class JavaGenerator extends Generator {
      */
     private File outputDir;
 
+    private File outFile;
+
+    private Function<SemanticType, File> outputCallback;
+
     private JavaGenerator(Builder builder) {
         this.profile = builder.profile;
         this.omeXmlFiles = builder.omeXmlFiles;
-        this.templateName = builder.template;
+        this.template = builder.template;
         this.outputDir = builder.outputDir;
         this.velocity.init(builder.properties);
     }
@@ -40,15 +45,21 @@ public class JavaGenerator extends Generator {
             return; // Skip when no files, otherwise we overwrite.
         }
 
+        // Get the template file
+        Template t = velocity.getTemplate(findTemplate());
+
         // Velocity process the semantic types
         for (SemanticType st : types) {
             VelocityContext vc = new VelocityContext();
             vc.put("type", st);
 
-            Template template = velocity.getTemplate(templateName);
-            File destination = prepareOutput(st);
-            writeToFile(vc, template, destination);
+            File destination = outputCallback.apply(st);
+            writeToFile(vc, t, destination);
         }
+    }
+
+    public void setOutputCallback(Function<SemanticType, File> outputCallback) {
+        this.outputCallback = outputCallback;
     }
 
     private File prepareOutput(SemanticType st) {
@@ -64,7 +75,7 @@ public class JavaGenerator extends Generator {
 
     public static class Builder {
         String profile;
-        String template;
+        File template;
         File outputDir;
         List<File> omeXmlFiles;
         Properties properties;
@@ -79,7 +90,7 @@ public class JavaGenerator extends Generator {
             return this;
         }
 
-        public Builder setTemplate(String template) {
+        public Builder setTemplate(File template) {
             this.template = template;
             return this;
         }

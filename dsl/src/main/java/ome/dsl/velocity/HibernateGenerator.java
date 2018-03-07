@@ -19,7 +19,7 @@ public class HibernateGenerator extends Generator {
     private HibernateGenerator(Builder builder) {
         this.profile = builder.profile;
         this.omeXmlFiles = builder.omeXmlFiles;
-        this.templateName = builder.templateName;
+        this.template = builder.template;
         this.outputFile = builder.outputFile;
         this.velocity.init(builder.properties);
     }
@@ -35,19 +35,21 @@ public class HibernateGenerator extends Generator {
         // Sort types by short name
         types.sort(Comparator.comparing(SemanticType::getShortname));
 
+        // Get the template file
+        Template t = velocity.getTemplate(findTemplate());
+
         // Velocity process the semantic types
         for (SemanticType st : types) {
             VelocityContext vc = new VelocityContext();
             vc.put("types", st);
 
-            Template template = velocity.getTemplate(templateName);
-            writeToFile(vc, template, prepareOutput(outputFile));
+            writeToFile(vc, t, prepareOutput(outputFile));
         }
     }
 
     public static class Builder {
         String profile;
-        String templateName;
+        File template;
         File outputFile;
         List<File> omeXmlFiles;
         Properties properties;
@@ -62,8 +64,8 @@ public class HibernateGenerator extends Generator {
             return this;
         }
 
-        public Builder setTemplate(String template) {
-            this.templateName = template;
+        public Builder setTemplate(File template) {
+            this.template = template;
             return this;
         }
 

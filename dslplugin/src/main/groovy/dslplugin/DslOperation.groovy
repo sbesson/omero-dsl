@@ -5,7 +5,7 @@ import org.gradle.api.file.FileTree
 class DslOperation {
     final String name
 
-    String templateName
+    String template
 
     FileTree omeXmlFiles
 

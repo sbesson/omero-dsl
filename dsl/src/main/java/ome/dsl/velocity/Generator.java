@@ -6,6 +6,7 @@ import ome.dsl.sax.MappingReader;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.RuntimeConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +36,7 @@ abstract class Generator implements Runnable {
     /**
      * Velocity template file name
      */
-    String templateName;
+    File template;
 
     List<SemanticType> loadSemanticTypes(Collection<File> files) {
         Map<String, SemanticType> typeMap = new HashMap<>();
@@ -51,6 +52,15 @@ abstract class Generator implements Runnable {
         }
 
         return new SemanticTypeProcessor(profile, typeMap).call();
+    }
+
+    String findTemplate() {
+        String resPath = (String) velocity.getProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH);
+        if (resPath != null && (resPath.isEmpty() || resPath.equals("."))) {
+            return template.toString();
+        } else {
+            return template.getName();
+        }
     }
 
     void writeToFile(VelocityContext vc, Template template, File destination) {
