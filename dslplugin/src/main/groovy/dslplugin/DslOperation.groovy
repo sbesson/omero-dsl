@@ -11,6 +11,8 @@ class DslOperation {
 
     File outputPath
 
+    File outputFile
+
     Closure formatOutput
 
     DslOperation(String name) {

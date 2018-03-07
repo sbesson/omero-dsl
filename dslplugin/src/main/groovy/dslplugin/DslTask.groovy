@@ -1,10 +1,18 @@
 package dslplugin
 
 import ome.dsl.SemanticType
-import ome.dsl.velocity.JavaGenerator
+import ome.dsl.velocity.MultiFileGenerator
+import ome.dsl.velocity.SingleFileGenerator
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileTree
-import org.gradle.api.tasks.*
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.TaskAction
 
 class DslTask extends DefaultTask {
 
@@ -18,7 +26,12 @@ class DslTask extends DefaultTask {
     FileTree omeXmlFiles
 
     @OutputDirectory
+    @Optional
     File outputPath
+
+    @OutputFile
+    @Optional
+    File outFile
 
     @Internal
     Closure formatOutput
@@ -28,20 +41,31 @@ class DslTask extends DefaultTask {
 
     @TaskAction
     def apply() {
-        // Create the code generator with the following options
-        def builder = new JavaGenerator.Builder()
+        def builder = outputPath != null ? createMultiFileGen() : createSingleFileGen()
         builder.omeXmlFiles = omeXmlFiles as List
-        builder.fileFormatter = new JavaGenerator.FileNameFormatter() {
+        builder.profile = profile
+        builder.template = template
+        builder.velocityProperties = velocityProps
+        builder.build().run()
+    }
+
+    MultiFileGenerator.Builder createMultiFileGen() {
+        def mb = new MultiFileGenerator.Builder()
+        mb.outputDir = outputPath
+        mb.fileFormatter = new MultiFileGenerator.FileNameFormatter() {
             @Override
             String format(SemanticType t) {
                 return formatOutput(t)
             }
         }
-        builder.profile = profile
-        builder.template = template
-        builder.outputDir = outputPath
-        builder.velocityProperties = velocityProps
-        builder.build().run()
+        return mb
     }
+
+    SingleFileGenerator.Builder createSingleFileGen() {
+        def b = new SingleFileGenerator.Builder()
+        b.outFile = outFile
+        return b
+    }
+
 
 }

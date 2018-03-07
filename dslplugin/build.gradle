@@ -41,8 +41,8 @@ task fatJar(type: Jar) {
     with jar
 }
 
-task sourceJar(type: Jar) {
-    classifier 'sources'
+task sourceJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
     from sourceSets.main.allSource
 }
 
