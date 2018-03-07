@@ -9,6 +9,10 @@ class DslOperation {
 
     FileTree omeXmlFiles
 
+    File outputPath
+
+    Closure formatOutput
+
     DslOperation(String name) {
         this.name = name
     }

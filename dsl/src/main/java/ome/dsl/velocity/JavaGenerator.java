@@ -1,17 +1,30 @@
 package ome.dsl.velocity;
 
 import ome.dsl.SemanticType;
+import ome.dsl.SemanticTypeProcessor;
+import ome.dsl.sax.MappingReader;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.RuntimeConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-import java.util.function.Function;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
-public class JavaGenerator extends Generator {
+public class JavaGenerator {
+
+    /**
+     * Callback for formatting final filename
+     */
+    public interface FileNameFormatter {
+        String format(SemanticType t);
+    }
 
     /**
      * Output structure for Java files e.g. 'package/class/name.java'
@@ -20,24 +33,44 @@ public class JavaGenerator extends Generator {
     private final static String CLS_PLACEHOLDER = "{class-name}";
     private final static String JAVA_OUTPUT = PKG_PLACEHOLDER + "/" + CLS_PLACEHOLDER + ".java";
 
+    final Logger logger = LoggerFactory.getLogger(JavaGenerator.class);
+
+    /**
+     * Profile thing
+     */
+    private String profile;
+
+    /**
+     * Collection of .ome.xml files to process
+     */
+    private List<File> omeXmlFiles;
+
+    /**
+     * Velocity template file name
+     */
+    private File template;
+
     /**
      * Folder to write velocity generated content
      */
     private File outputDir;
 
-    private File outFile;
+    /**
+     * callback for formatting output file name
+     */
+    private FileNameFormatter formatFileName;
 
-    private Function<SemanticType, File> outputCallback;
+    private VelocityEngine velocity = new VelocityEngine();
 
-    private JavaGenerator(Builder builder) {
+    private JavaGenerator(JavaGenerator.Builder builder) {
         this.profile = builder.profile;
         this.omeXmlFiles = builder.omeXmlFiles;
         this.template = builder.template;
         this.outputDir = builder.outputDir;
+        this.formatFileName = builder.formatFileName;
         this.velocity.init(builder.properties);
     }
 
-    @Override
     public void run() {
         // Create list of semantic types from source files
         Collection<SemanticType> types = loadSemanticTypes(omeXmlFiles);
@@ -53,32 +86,66 @@ public class JavaGenerator extends Generator {
             VelocityContext vc = new VelocityContext();
             vc.put("type", st);
 
-            File destination = outputCallback.apply(st);
-            writeToFile(vc, t, destination);
+            String filename = formatFileName.format(st);
+            File destination = new File(outputDir, filename);
+            writeToFile(vc, t, prepareOutput(destination));
         }
     }
 
-    public void setOutputCallback(Function<SemanticType, File> outputCallback) {
-        this.outputCallback = outputCallback;
+    List<SemanticType> loadSemanticTypes(Collection<File> files) {
+        Map<String, SemanticType> typeMap = new HashMap<>();
+        MappingReader sr = new MappingReader(profile);
+        for (File file : files) {
+            if (file.exists()) {
+                typeMap.putAll(sr.parse(file));
+            }
+        }
+
+        if (typeMap.isEmpty()) {
+            return Collections.emptyList(); // Skip when no files, otherwise we overwrite.
+        }
+
+        return new SemanticTypeProcessor(profile, typeMap).call();
     }
 
-    private File prepareOutput(SemanticType st) {
-        String className = st.getShortname();
-        String packageName = st.getPackage();
+    void writeToFile(VelocityContext vc, Template template, File destination) {
+        try (BufferedWriter output = new BufferedWriter(
+                new OutputStreamWriter(
+                        new FileOutputStream(destination), StandardCharsets.UTF_8))) {
+            template.merge(vc, output);
+        } catch (Exception e) {
+            logger.error("", e);
+        }
+    }
 
-        String target = Paths.get(outputDir.getPath(), JavaGenerator.JAVA_OUTPUT).toString();
-        target = target.replace(CLS_PLACEHOLDER, className);
-        target = target.replace(PKG_PLACEHOLDER, packageName);
+    File prepareOutput(File target) {
+        if (!target.exists()) {
+            File parent = target.getParentFile();
+            if (parent != null && !parent.exists()) {
+                if (!target.getParentFile().mkdirs()) {
+                    throw new RuntimeException("Failed to create file for output");
+                }
+            }
+        }
+        return target;
+    }
 
-        return super.prepareOutput(target);
+    String findTemplate() {
+        String resPath = (String) velocity.getProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH);
+        if (resPath != null && (resPath.isEmpty() || resPath.equals("."))) {
+            return template.toString();
+        } else {
+            return template.getName();
+        }
     }
 
     public static class Builder {
         String profile;
         File template;
         File outputDir;
-        List<File> omeXmlFiles;
         Properties properties;
+        FileNameFormatter formatFileName;
+        List<File> omeXmlFiles;
 
         public Builder setProfile(String profile) {
             this.profile = profile;
@@ -105,7 +172,12 @@ public class JavaGenerator extends Generator {
             return this;
         }
 
-        public Generator build() {
+        public Builder setFileFormatter(FileNameFormatter callback) {
+            this.formatFileName = callback;
+            return this;
+        }
+
+        public JavaGenerator build() {
             return new JavaGenerator(this);
         }
     }

@@ -16,7 +16,6 @@ class DslPlugin implements Plugin<Project> {
     void apply(Project project) {
         setupDsl(project)
         configJavaTasks(project)
-        configHibernateTasks(project)
     }
 
     void setupDsl(final Project project) {
@@ -27,18 +26,15 @@ class DslPlugin implements Plugin<Project> {
         project.dsl.extensions.create('velocity', VelocityExtension)
 
         // Add NamedDomainObjectContainer for java configs
-        project.dsl.extensions.add("java", project.container(DslOperationJava))
-
-        // Add NamedDomainObjectContainer for hibernate configs
-        project.dsl.extensions.add("hibernate", project.container(DslOperationHibernate))
+        project.dsl.extensions.add("generate", project.container(DslOperation))
     }
 
     void configJavaTasks(final Project project) {
-        project.dsl.java.all { info ->
+        project.dsl.generate.all { info ->
             def taskName = "process${info.name.capitalize()}"
 
             // Create task and assign group name
-            def task = project.task(taskName, type: JavaTask) {
+            def task = project.task(taskName, type: DslTask) {
                 group = GROUP
                 description = 'parses ome.xml files and compiles velocity template'
             }
@@ -50,30 +46,7 @@ class DslPlugin implements Plugin<Project> {
                 task.template = determineTemplateFileLocation(props, info.template)
                 task.omeXmlFiles = info.omeXmlFiles
                 task.outputPath = info.outputPath
-            }
-
-            // Ensure the dsltask runs before compileJava
-            project.tasks.getByName("compileJava").dependsOn(taskName)
-        }
-    }
-
-    void configHibernateTasks(final Project project) {
-        project.dsl.hibernate.all { info ->
-            def taskName = "process${info.name.capitalize()}"
-
-            // Create task and assign group name
-            def task = project.task(taskName, type: HibernateTask) {
-                group = GROUP
-                description = 'parses ome.xml files and compiles velocity template'
-            }
-
-            // Assign property values to task inputs
-            project.afterEvaluate {
-                def props = configureVelocity(project)
-                task.velocityProps = props
-                task.template = determineTemplateFileLocation(props, info.template)
-                task.omeXmlFiles = info.omeXmlFiles
-                task.outFile = info.outFile
+                task.formatOutput = info.formatOutput
             }
 
             // Ensure the dsltask runs before compileJava
@@ -120,8 +93,8 @@ class DslPlugin implements Plugin<Project> {
                     extension.file_resource_loader_cache as String)
         }
 
-        extension.resource_loader_class.each { k, v ->
-            props.setProperty(k as String, v as String)
+        extension.resource_loader_class.each { String k, String v ->
+            props.setProperty(k, v)
         }
 
         return props
