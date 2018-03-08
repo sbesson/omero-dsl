@@ -11,7 +11,7 @@ class DslOperation {
 
     File outputPath
 
-    File outputFile
+    File outFile
 
     Closure formatOutput
 

@@ -46,7 +46,7 @@ class DslPlugin implements Plugin<Project> {
                 task.template = determineTemplateFileLocation(props, info.template)
                 task.omeXmlFiles = info.omeXmlFiles
                 task.outputPath = info.outputPath
-                task.outFile = info.outputFile
+                task.outFile = info.outFile
                 task.formatOutput = info.formatOutput
             }
 
