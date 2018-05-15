@@ -27,11 +27,11 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.openmicroscopy:dslplugin:1.0'
+        classpath 'org.openmicroscopy:dslplugin:1.0'
     }
 } 
 
-apply plugin: 'com.openmicroscopy.dslplugin'
+apply plugin: 'org.openmicroscopy.dslplugin'
 ```
 
 ### Configuring plugin

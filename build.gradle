@@ -1,5 +1,5 @@
 subprojects {
-    group = 'com.openmicroscopy'
+    group = 'org.openmicroscopy'
     version = '1.0'
 }
 
